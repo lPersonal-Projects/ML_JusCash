@@ -1,9 +1,36 @@
 services:
-  # Serviço 1: API (Backend)
+  # --- TRAEFIK (Proxy Reverso & SSL) ---
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    command:
+      #- "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Pontos de entrada (Portas)
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Redirecionamento Global HTTP -> HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # Configuração do Let's Encrypt (Challenge HTTP)
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=cleytonnobre@outlook.com" # 
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt" # Pasta local onde o certificado será salvo
+    networks:
+      - juscash-network
+
+  # --- SERVIÇO 1: API (Backend) ---
   api:
     build: .
     container_name: juscash-api
-    # Sobrescreve o CMD do Dockerfile para rodar apenas a API
     command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
@@ -11,27 +38,24 @@ services:
       - .env
     environment:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      # Configuração para LangSmith (Opcional)
       - LANGCHAIN_TRACING_V2=true
       - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
     networks:
       - juscash-network
     volumes:
-      # Monta o código local dentro do container para "Hot Reload" (alterou o código, atualiza na hora)
       - ./app:/app
 
-  # Serviço 2: Interface Visual (Frontend)
+  # --- SERVIÇO 2: Interface Visual (Frontend) ---
   ui:
     build: .
     container_name: juscash-ui
-    # Sobrescreve o CMD para rodar apenas o Streamlit
     command: streamlit run frontend/ui.py --server.port 8501 --server.address 0.0.0.0
-    ports:
-      - "80:8501"
+    expose:
+      - "8501"
     env_file:
       - .env
     environment:
-      # A UI precisa saber onde a API está. Dentro da rede Docker, usamos o nome do serviço 'api'
+      # A UI acessa a API internamente via nome do serviço
       - API_URL=http://api:8000
     depends_on:
       - api
@@ -39,10 +63,14 @@ services:
       - juscash-network
     volumes:
       - ./app:/app
+    labels:
+      - "traefik.enable=true"
+      # Configuração do Roteador 
+      - "traefik.http.routers.ui.rule=Host(`juscashui.duckdns.org`)"
+      - "traefik.http.routers.ui.entrypoints=websecure"
+      - "traefik.http.routers.ui.tls.certresolver=myresolver"
+      - "traefik.http.services.ui.loadbalancer.server.port=8501"
 
 networks:
   juscash-network:
     driver: bridge
-
-volumes:
-  n8n_data:
