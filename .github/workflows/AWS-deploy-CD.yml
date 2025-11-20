@@ -34,8 +34,7 @@ jobs:
 
       - name: Upload para o S3
         run: |
-          aws s3 cp deploy_artifact/app.zip s3://blog-deploy-artifacts-lpersonal/app.zip
-
+          aws s3 cp deploy_artifact/app.zip s3://juscash-deploy-artifacts-lpersonal/app.zip
       - name: Criar Deployment no CodeDeploy
         run: |
           aws deploy create-deployment \
