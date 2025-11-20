@@ -38,8 +38,8 @@ jobs:
       - name: Criar Deployment no CodeDeploy
         run: |
           aws deploy create-deployment \
-            --application-name Blog-App \
-            --deployment-group-name Blog-Prod-Group \
-            --s3-location bucket=blog-deploy-artifacts-lpersonal,key=app.zip,bundleType=zip \
+            --application-name juscash-codedeploy \
+            --deployment-group-name juscash-codedeploy-Prod-Group \
+            --s3-location bucket=juscash-deploy-artifacts-lpersonal,key=app.zip,bundleType=zip \
             --file-exists-behavior OVERWRITE \
             --description "Deploy via GitHub Actions commit ${{ github.sha }}"
