@@ -44,6 +44,13 @@ services:
       - juscash-network
     volumes:
       - ./app:/app
+    labels:
+      - "traefik.enable=true"
+      # Essas regras só serão ativadas quando o domínio bater no servidor
+      - "traefik.http.routers.api.rule=Host(`juscashapi.duckdns.org`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=myresolver"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
 
   # --- SERVIÇO 2: Interface Visual (Frontend) ---
   ui:
