@@ -14,8 +14,6 @@ from langchain_core.output_parsers import JsonOutputParser
 load_dotenv()
 
 # --- 1. Definição dos Modelos de Dados (Pydantic) ---
-# Baseado no "Exemplo de Schema" do PDF
-
 class Documento(BaseModel):
     id: str
     dataHoraJuntada: Optional[str] = None
@@ -65,8 +63,6 @@ app = FastAPI(
 
 def get_llm_chain():
     # Configura o modelo Gemini
-    # Recomendação: use "gemini-1.5-flash" para velocidade e baixo custo
-    # Ou "gemini-1.5-pro" para raciocínio mais complexo
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.0-flash",
         temperature=0,
@@ -74,9 +70,9 @@ def get_llm_chain():
         max_retries=2,
     )
     
-    # Definição das Regras de Negócio (Copiadas do PDF)
+    # Definição das Regras de Negócio
     politica_juscash = """
-    Você é um analista jurídico sênior da JusCash. Sua tarefa é analisar dados JSON de processos judiciais.
+    Você é um analista jurídico sênior. Sua tarefa é analisar dados JSON de processos judiciais.
     
     Siga ESTRITAMENTE estas regras (Policies):
     
@@ -86,7 +82,7 @@ def get_llm_chain():
 
     CRITÉRIOS DE REJEIÇÃO:
     - POL-3: Valor da condenação menor que R$ 1.000,00.
-    - POL-4: Esfera "Trabalhista" (ou classe/assunto indicar trabalhista).
+    - POL-4: Esfera "Trabalhista".
     - POL-5: Óbito do autor sem inventário.
     - POL-6: Substabelecimento sem reserva de poderes.
 

@@ -23,7 +23,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar todo o código do projeto para dentro do container
-COPY . .
+COPY ./app/. .   
 
 # Expor as portas usadas pela aplicação
 # 8000 = FastAPI (Padrão do Uvicorn)

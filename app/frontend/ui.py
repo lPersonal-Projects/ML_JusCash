@@ -15,14 +15,20 @@ st.markdown("Cole o JSON do processo judicial abaixo para verificar a conformida
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 # Área de Input
-# Colocamos um JSON de exemplo do case para facilitar o teste
+#JSON de exemplo para facilitar o teste
 exemplo_json = {
-    "numeroProcesso": "0004587-00.2021.4.05.8100",
-    "classe": "Cumprimento de Sentença contra a Fazenda Pública",
-    "valorCondenacao": 67592,
-    "esfera": "Federal",
-    "documentos": [],
-    "movimentos": []
+  "numeroProcesso": "0023456-78.2022.4.05.0000",
+  "classe": "Cumprimento de Sentença contra a Fazenda Pública",
+  "orgaoJulgador": "VARA FEDERAL RECIFE/PE",
+  "ultimaDistribuicao": "2024-08-12T09:30:00.000Z",
+  "assunto": "Beneficio assistencial",
+  "segredoJustica": false,
+  "justicaGratuita": true,
+  "siglaTribunal": "TRF5",
+  "esfera": "Federal",
+  "valorCondenacao": 50000.00,
+  "documentos": [],
+  "movimentos": []
 }
 
 json_input = st.text_area(
@@ -59,7 +65,7 @@ if st.button("Analisar Processo"):
             else:
                 st.info(f"Decisão: {decisao}")
             
-            # Exibir Justificativa e Citações (Requisitos do Case)
+            # Exibir Justificativa e Citações
             st.markdown(f"**Justificativa:** {resultado.get('rationale')}")
             
             if resultado.get("citacoes"):
@@ -67,7 +73,7 @@ if st.button("Analisar Processo"):
                 for regra in resultado.get("citacoes", []):
                     st.caption(f"• {regra}")
             
-            # Debug: Mostrar JSON de resposta completo (Opcional)
+            # Debug: Mostrar JSON de resposta completo
             with st.expander("Ver JSON de Resposta Bruto"):
                 st.json(resultado)
                 
@@ -78,4 +84,4 @@ if st.button("Analisar Processo"):
     except json.JSONDecodeError:
         st.error("O texto inserido não é um JSON válido. Por favor, verifique a formatação.")
     except requests.exceptions.ConnectionError:
-        st.error("Não foi possível conectar à API. Verifique se o container do backend está rodando.")
+        st.error("Não foi possível conectar à API.")

@@ -4,7 +4,7 @@ services:
     build: .
     container_name: juscash-api
     # Sobrescreve o CMD do Dockerfile para rodar apenas a API
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     env_file:
@@ -18,16 +18,16 @@ services:
       - juscash-network
     volumes:
       # Monta o código local dentro do container para "Hot Reload" (alterou o código, atualiza na hora)
-      - .:/app
+      - ./app:/app
 
   # Serviço 2: Interface Visual (Frontend)
   ui:
     build: .
     container_name: juscash-ui
     # Sobrescreve o CMD para rodar apenas o Streamlit
-    command: streamlit run ui.py --server.port 8501 --server.address 0.0.0.0
+    command: streamlit run frontend/ui.py --server.port 8501 --server.address 0.0.0.0
     ports:
-      - "8501:8501"
+      - "80:8501"
     env_file:
       - .env
     environment:
@@ -38,25 +38,7 @@ services:
     networks:
       - juscash-network
     volumes:
-      - .:/app
-
-  # (OPCIONAL) Serviço 3: n8n para Orquestração
-  # Adicionei pois o case pede "ferramenta de orquestração" (Item 5 do PDF)
-  # n8n:
-  #   image: docker.n8n.io/n8nio/n8n
-  #   container_name: juscash-n8n
-  #   ports:
-  #     - "5678:5678"
-  #   environment:
-  #     - N8N_HOST=localhost
-  #     - N8N_PORT=5678
-  #     - N8N_PROTOCOL=http
-  #     - NODE_ENV=production
-  #     - WEBHOOK_URL=http://localhost:5678/
-  #   networks:
-  #     - juscash-network
-  #   volumes:
-  #     - n8n_data:/home/node/.n8n
+      - ./app:/app
 
 networks:
   juscash-network:
