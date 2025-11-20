@@ -7,16 +7,16 @@ services:
       #- "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      # Pontos de entrada (Portas)
+      # Pontos de entrada
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       # Redirecionamento Global HTTP -> HTTPS
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      # Configuração do Let's Encrypt (Challenge HTTP)
+      # Configuração do Let's Encrypt
       - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.myresolver.acme.email=cleytonnobre@outlook.com" # 
+      - "--certificatesresolvers.myresolver.acme.email=cleytonnobre@outlook.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
@@ -50,12 +50,16 @@ services:
     build: .
     container_name: juscash-ui
     command: streamlit run frontend/ui.py --server.port 8501 --server.address 0.0.0.0
-    expose:
-      - "8501"
+    # --- MUDANÇA AQUI ---
+    # Adicionamos 'ports' para permitir acesso direto localmente.
+    # O Traefik usará a rede interna, mas você pode usar localhost:8501
+    ports:
+      - "8501:8501"
     env_file:
       - .env
     environment:
-      # A UI acessa a API internamente via nome do serviço
+      # IMPORTANTE: Localmente, o container da UI talvez não ache 'api' se você rodar fora do docker.
+      # Mas como ambos estão no docker, mantém-se http://api:8000
       - API_URL=http://api:8000
     depends_on:
       - api
@@ -65,7 +69,7 @@ services:
       - ./app:/app
     labels:
       - "traefik.enable=true"
-      # Configuração do Roteador 
+      # Essas regras só serão ativadas quando o domínio bater no servidor
       - "traefik.http.routers.ui.rule=Host(`juscashui.duckdns.org`)"
       - "traefik.http.routers.ui.entrypoints=websecure"
       - "traefik.http.routers.ui.tls.certresolver=myresolver"
