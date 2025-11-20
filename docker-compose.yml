@@ -23,7 +23,7 @@ services:
       - "443:443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./letsencrypt:/letsencrypt" # Pasta local onde o certificado será salvo
+      - "./letsencrypt:/letsencrypt"
     networks:
       - juscash-network
 
